@@ -59,4 +59,60 @@ export class SearchService {
       throw new RpcException('Failed to search product');
     }
   }
+
+  async deleteProduct(productId: string) {
+    try {
+      await this.elasticsearchService.deleteByQuery({
+        index: this.index,
+        body: {
+          query: {
+            match: {
+              id: productId,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new RpcException('Failed to remove product');
+    }
+  }
+
+  async updateProduct(product: Product) {
+    try {
+      const newBody = {
+        id: product._id,
+        name: product.name,
+        product_code: product.product_code,
+        price: product.price,
+        sale: product.sale,
+        slug: product.slug,
+        description: product.description,
+      };
+
+      const script = Object.entries(newBody).reduce((result, [key, value]) => {
+        if (typeof value === 'number') {
+          return `${result} ctx._source.${key}=${value};`;
+        }
+        return `${result} ctx._source.${key}='${value}';`;
+      }, '');
+
+      return await this.elasticsearchService.updateByQuery({
+        index: this.index,
+        body: {
+          query: {
+            match: {
+              id: product._id,
+            },
+          },
+          script: {
+            inline: script,
+          },
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      throw new RpcException('Failed to update product');
+    }
+  }
 }

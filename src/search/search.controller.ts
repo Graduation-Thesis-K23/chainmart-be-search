@@ -14,7 +14,16 @@ export class SearchController {
 
   @MessagePattern('search.product')
   searchProduct(@Payload() text: string) {
-    console.log('hi');
     return this.searchService.searchProduct(text);
+  }
+
+  @EventPattern('search.product.delete')
+  deleteProduct(productId: string) {
+    this.searchService.deleteProduct(productId);
+  }
+
+  @EventPattern('search.product.update')
+  updateProduct(product: any) {
+    this.searchService.updateProduct(product);
   }
 }
