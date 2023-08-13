@@ -13,6 +13,7 @@ import {
   ProductSearchBody,
   ProductSearchResult,
 } from './interfaces/product-search-result.interface';
+import { removeAccents } from 'src/helpers/process-accents';
 
 @Injectable()
 export class SearchService {
@@ -79,6 +80,8 @@ export class SearchService {
           id: order.id,
           order_code: order.order_code,
           user_id: order.user_id,
+          slugs: order.slugs,
+          phone: order.phone,
         },
       });
       console.log(result);
@@ -89,15 +92,30 @@ export class SearchService {
   }
 
   async searchOrders(text: string) {
+    const textNotAccents = removeAccents(text);
+    console.log('textNotAccents', textNotAccents);
+    // match order_code or match element in slugs
+
     try {
       const { body } =
         await this.elasticsearchService.search<ProductSearchResult>({
           index: 'orders',
           body: {
             query: {
-              // order_code contains text
-              match: {
-                order_code: text,
+              bool: {
+                should: [
+                  {
+                    multi_match: {
+                      query: text,
+                      fields: ['order_code', 'phone'],
+                    },
+                  },
+                  {
+                    terms: {
+                      slugs: [textNotAccents],
+                    },
+                  },
+                ],
               },
             },
           },
