@@ -11,10 +11,19 @@ export class SearchController {
   indexProduct(product: any) {
     this.searchService.indexProduct(product);
   }
+  @EventPattern('search.order.index')
+  indexOrder(order: any) {
+    this.searchService.indexOrder(order);
+  }
 
   @MessagePattern('search.product')
   searchProduct(@Payload() text: string) {
     console.log('hi');
     return this.searchService.searchProduct(text);
+  }
+
+  @MessagePattern('search.orders')
+  searchOrders(@Payload() text: string) {
+    return this.searchService.searchOrders(text);
   }
 }

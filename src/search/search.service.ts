@@ -2,11 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { ElasticsearchService } from '@nestjs/elasticsearch';
 
 import { Product } from './entities/product.entity';
+
+import { RpcException } from '@nestjs/microservices';
+import { Order } from './entities/order.entity';
+import {
+  OrderSearchBody,
+  OrderSearchResult,
+} from './interfaces/order-search-result.interface';
 import {
   ProductSearchBody,
   ProductSearchResult,
 } from './interfaces/product-search-result.interface';
-import { RpcException } from '@nestjs/microservices';
 
 @Injectable()
 export class SearchService {
@@ -57,6 +63,52 @@ export class SearchService {
     } catch (error) {
       console.error(error);
       throw new RpcException('Failed to search product');
+    }
+  }
+
+  async indexOrder(order: Order) {
+    console.log(order);
+
+    try {
+      const result = await this.elasticsearchService.index<
+        OrderSearchResult,
+        OrderSearchBody
+      >({
+        index: 'orders',
+        body: {
+          id: order.id,
+          order_code: order.order_code,
+          user_id: order.user_id,
+        },
+      });
+      console.log(result);
+    } catch (error) {
+      console.error(error);
+      throw new RpcException('Failed to index order');
+    }
+  }
+
+  async searchOrders(text: string) {
+    try {
+      const { body } =
+        await this.elasticsearchService.search<ProductSearchResult>({
+          index: 'orders',
+          body: {
+            query: {
+              // order_code contains text
+              match: {
+                order_code: text,
+              },
+            },
+          },
+        });
+      const hits = body.hits.hits;
+      console.log('hits', hits);
+
+      return hits.map((item) => item._source);
+    } catch (error) {
+      console.error(error);
+      return [];
     }
   }
 }
