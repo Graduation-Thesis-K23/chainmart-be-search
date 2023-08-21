@@ -7,6 +7,12 @@ import { SearchService } from './search.service';
 export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
+  @MessagePattern('search.health-check')
+  async healthCheck() {
+    console.log('search.health-check received');
+    return 'search service is working';
+  }
+
   @EventPattern('search.product.index')
   indexProduct(product: any) {
     this.searchService.indexProduct(product);
