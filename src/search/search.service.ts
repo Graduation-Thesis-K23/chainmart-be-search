@@ -38,7 +38,6 @@ export class SearchService {
           description: product.description,
         },
       });
-      console.log(result);
     } catch (error) {
       console.error(error);
       throw new RpcException('Failed to index product');
@@ -68,7 +67,6 @@ export class SearchService {
   }
 
   async indexOrder(order: Order) {
-    console.log(order);
 
     try {
       const result = await this.elasticsearchService.index<
@@ -84,7 +82,6 @@ export class SearchService {
           phone: order.phone,
         },
       });
-      console.log(result);
     } catch (error) {
       console.error(error);
       throw new RpcException('Failed to index order');
@@ -93,7 +90,6 @@ export class SearchService {
 
   async searchOrders(text: string) {
     const textNotAccents = removeAccents(text);
-    console.log('textNotAccents', textNotAccents);
     // match order_code or match element in slugs
 
     try {
@@ -121,7 +117,6 @@ export class SearchService {
           },
         });
       const hits = body.hits.hits;
-      console.log('hits', hits);
 
       return hits.map((item) => item._source);
     } catch (error) {

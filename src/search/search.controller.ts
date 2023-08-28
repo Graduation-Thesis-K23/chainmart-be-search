@@ -9,7 +9,6 @@ export class SearchController {
 
   @MessagePattern('search.health-check')
   async healthCheck() {
-    console.log('search.health-check received');
     return 'search service is working';
   }
 
@@ -24,7 +23,6 @@ export class SearchController {
 
   @MessagePattern('search.product')
   searchProduct(@Payload() text: string) {
-    console.log('hi');
     return this.searchService.searchProduct(text);
   }
 
